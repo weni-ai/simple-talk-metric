@@ -1,0 +1,81 @@
+repos:
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+
+#  - repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v1.4.1
+#    hooks:
+#      - id: mypy
+#        additional_dependencies:
+#          - types-requests
+#        args:
+#          - --ignore-missing-imports
+
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args: ['--ignore=D200,D203,D204,D213,D300']
+        exclude: '^(psyflask/migrations/|setup.py|docker/beat_healthcheck.py|docs/conf.py)'
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
+    rev: 0.2.3
+    hooks:
+      - id: yamlfmt
+        args: [--mapping, '2', --sequence, '4', --offset, '2', --width, '150', --implicit_start, -p]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Format
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: pretty-format-json
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: debug-statements
+      - id: check-merge-conflict
+      - id: double-quote-string-fixer
+      - id: check-executables-have-shebangs
+
+      # Cross platform
+      - id: check-case-conflict
+      - id: fix-encoding-pragma
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+      # Security
+      - id: detect-aws-credentials
+        args: ['--allow-missing-credentials']
+      - id: detect-private-key
+
+      # Git style
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: forbid-new-submodules
+      #- id: no-commit-to-branch
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 3.0.0
+    hooks:
+      - id: shfmt
+        args: ['-l', '-ci', '-sr', '-w']
+      - id: shellcheck
+      - id: forbid-binary
+      #- id: forbid-space-in-indent
+      - id: git-check
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        args: ["-rn", "-sn"]
+
+# vim: nu ts=2 fdm=indent et ft=yaml shiftwidth=2 softtabstop=2:

@@ -1,0 +1,3 @@
+awslambdaric
+urllib3
+aws-lambda-typing

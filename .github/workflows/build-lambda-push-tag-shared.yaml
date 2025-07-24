@@ -1,0 +1,39 @@
+name: Build Lambda Test(Push Tag)
+
+on:
+  push:
+    tags:
+      - '*.*.*-develop'
+      - '*.*.*-staging'
+      - '*.*.*'
+
+jobs:
+  call-workflow:
+    uses: weni-ai/actions-workflows/.github/workflows/build-lambda.yaml@main
+    with:
+      target_application: "lambda-test lambda-test2"
+      image_tag_prefix: lambda-test-
+      debug: "true"
+      # private repository not have arm64 runner
+      image_arch: |
+        [
+          {
+            "platform": "linux/arm64",
+            "runner": "ubuntu-latest"
+          },
+          {
+            "platform": "linux/amd64",
+            "runner": "ubuntu-latest"
+          }
+        ]
+      #image_arch: |
+      #  [
+      #    {
+      #      "platform": "linux/amd64",
+      #      "runner": "ubuntu-latest"
+      #    }
+      #  ]
+
+    secrets: inherit
+
+# vim: nu ts=2 fdm=indent et ft=yaml shiftwidth=2 softtabstop=2:
