@@ -1,3 +1,5 @@
 awslambdaric
 urllib3
 aws-lambda-typing
+openai
+boto3
