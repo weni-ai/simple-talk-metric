@@ -11,21 +11,21 @@ jobs:
   call-workflow:
     uses: weni-ai/actions-workflows/.github/workflows/build-lambda.yaml@main
     with:
-      target_application: "lambda-test lambda-test2"
-      image_tag_prefix: lambda-test-
-      debug: "true"
+      target_application: "simple-talk-metric"
+      image_tag_prefix: simple-talk-metric-
+      #debug: "true"
       # private repository not have arm64 runner
-      image_arch: |
-        [
-          {
-            "platform": "linux/arm64",
-            "runner": "ubuntu-latest"
-          },
-          {
-            "platform": "linux/amd64",
-            "runner": "ubuntu-latest"
-          }
-        ]
+      #image_arch: |
+      #  [
+      #    {
+      #      "platform": "linux/arm64",
+      #      "runner": "ubuntu-latest"
+      #    },
+      #    {
+      #      "platform": "linux/amd64",
+      #      "runner": "ubuntu-latest"
+      #    }
+      #  ]
       #image_arch: |
       #  [
       #    {
