@@ -1,53 +1,76 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-'''\
-AWS Lambda handler example application.
-'''
+import json
+from openai import OpenAI
 
-import sys
-import typing
+OPENAI_API_KEY=get_parameter('OPENAI_API_KEY')
 
-from aws_lambda_typing.context import Context  # pylint: disable=import-error
-from aws_lambda_typing.events import S3Event  # pylint: disable=import-error
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-from get_parameter import get_parameter
+def send_message(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4.1-nano",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content.strip()
 
+def build_conversation_string(messages):
 
-def lambda_handler(
-		event: S3Event, # pylint: disable=unused-argument
-		context: Context # pylint: disable=unused-argument
-) -> typing.Dict[str, typing.Any]:
-	'''\
-	Implement example function to test the AWS Lambda handler.
+    conversation_parts = []
+    
+    for message in messages:
+        sender = message.get("sender", "")
+        content = message.get("content", "")
+        
+        # Mapeia o sender para um formato mais legível
+        if sender.lower() in ["user", "usuario", "usuário"]:
+            formatted_sender = "Usuário"
+        elif sender.lower() in ["bot", "chatbot", "assistant"]:
+            formatted_sender = "Chatbot"
+        else:
+            # Mantém o sender original se não conseguir mapear
+            formatted_sender = sender.capitalize()
+        
+        conversation_parts.append(f"[{formatted_sender}]: {content}")
+    
+    return "\n\n".join(conversation_parts)
 
-	This function exist only for tests presupposes, some code here is
-	used only as examples.
-	'''
-	### Load Parameter Store values from extension
-	parameter_value=get_parameter(
-		'SuperSecret'
-	)
-	print(f'Found config values: {parameter_value}')
+def classify_text(text):
+    prompt = f'''Você é um especialista em analisar se uma conversa foi apenas uma small talk com o usuário, se for apenas uma simples conversa onde o usuário não pede nada especifico, não obtem informações e não resolve nenhum problema dele significa que é uma small talk, faça isso seguido as isntruções abaixo
+    instruções:
+        - "true" significa que é uma small talk.
+        - "false" significa que não é ums small talk
+        - NÃO EXPLIQUE O PORQUE OU COMO FEZ A TAREFA APENAS FAÇA.
+        - SEU OUTPUT DEVE SER APENAS OU A TAG DE "true" OU A TAG DE "false", NADA A MAIS.
+        Conversa completa: \"{text}\"
+        OUTPUT:
+    '''
+    return send_message(prompt)
 
-	return {
-		'statusCode': 200,
-		'message': f'Hello from AWS Lambda using Python {sys.version}!!! {parameter_value}',
-	}
-
-def another_lambda_handler(
-		event: S3Event, # pylint: disable=unused-argument
-		context: Context # pylint: disable=unused-argument
-) -> typing.Dict[str, typing.Any]:
-	'''\
-	Implement another example function lambda handler to test.
-
-	This function exist only for tests presupposes, some code here is
-	used only as examples. This is a test for another lambda handler in the
-	same image.
-	'''
-	return {
-		'statusCode': 200,
-		'message': f'another_lambda_handler using Python {sys.version}!!!',
-	}
-
-# vim: nu ts=4 fdm=indent noet ft=python:
+def lambda_handler(event, context):
+    # Agora esperamos uma lista de mensagens
+    messages = event.get("messages", [])
+    
+    if not messages:
+        return {
+            'statusCode': 400,
+            'body': json.dumps("Erro: entrada 'messages' está vazia ou ausente.")
+        }
+    
+    try:
+        # Constrói a string de conversa a partir das mensagens
+        conversation_string = build_conversation_string(messages)
+        
+        # Classifica a conversa
+        classification = classify_text(conversation_string)
+        
+        return {
+            'statusCode': 200,
+            'body': {
+                #'conversation': conversation_string,  # Opcional: retorna a conversa montada
+                'classification': classification
+            }
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f"Erro ao classificar: {str(e)}")
+        }
