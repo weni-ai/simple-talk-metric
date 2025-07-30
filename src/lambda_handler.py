@@ -1,5 +1,7 @@
 import json
 from openai import OpenAI
+import sys
+from get_parameter import get_parameter
 
 OPENAI_API_KEY=get_parameter('OPENAI_API_KEY')
 
