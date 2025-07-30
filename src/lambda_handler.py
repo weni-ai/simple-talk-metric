@@ -2,9 +2,11 @@ import json
 from openai import OpenAI
 import sys
 from get_parameter import get_parameter
+import time
 
+time.sleep(3)
 OPENAI_API_KEY=get_parameter('OPENAI_API_KEY')
-
+time.sleep(3)
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def send_message(prompt):
