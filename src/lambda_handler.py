@@ -36,15 +36,28 @@ def build_conversation_string(messages):
     return "\n\n".join(conversation_parts)
 
 def classify_text(text):
-    prompt = f'''Você é um especialista em analisar se uma conversa foi apenas uma small talk com o usuário, se for apenas uma simples conversa onde o usuário não pede nada especifico, não obtem informações e não resolve nenhum problema dele significa que é uma small talk, faça isso seguido as isntruções abaixo
-    instruções:
-        - "true" significa que é uma small talk.
-        - "false" significa que não é ums small talk
-        - NÃO EXPLIQUE O PORQUE OU COMO FEZ A TAREFA APENAS FAÇA.
-        - SEU OUTPUT DEVE SER APENAS OU A TAG DE "true" OU A TAG DE "false", NADA A MAIS.
-        Conversa completa: \"{text}\"
-        OUTPUT:
-    '''
+    prompt = f"""
+Você é um classificador binário. Decida se a conversa abaixo está APENAS em fase de social/descoberta (sem pedido específico atendido, sem informação útil entregue, sem próximo passo executável) = "true"; ou se já há um pedido específico sendo atendido com entrega de informação concreta ou execução de ação = "false".
+
+REGRAS — Retorne "true" quando QUALQUER um ocorrer:
+- A mensagem do usuário é publicidade/anúncio/marketing, com CTAs (ex.: "Get started", links comerciais) ou texto genérico sem pedir algo concreto.
+- Há somente intenção vaga de compra ("quero comprar uma airfryer", "quero uma lava-louças") e a conversa está em acolhimento/triagem: o bot só faz perguntas ("tamanho/cor/orçamento") ou diz "procurando…/analisando…".
+- O bot **não** entregou itens/modelos/códigos específicos, **nem** disponibilidade, **nem** uma lista objetiva de promoções **nem** um próximo passo executável (criar pedido, agendar, enviar orçamento, link de compra específico).
+- A conversa termina sem o usuário responder às perguntas de triagem.
+- Mensagens automáticas do bot como "procurando…", "analisando…" sem resultado também contam como "true".
+- Observação: preços genéricos do tipo "a partir de R$ X" **sem** associar a um item/modelo específico **NÃO** contam como informação concreta.
+
+Retorne "false" SOMENTE se pelo menos UM ocorrer:
+- O usuário faz um pedido específico (ex.: "quais promoções desta semana?") **e** o bot entrega o conteúdo pedido (lista de promoções com itens/valores/condições).
+- O bot fornece recomendações concretas (≥1 produto com nome/modelo/código) ou executa um próximo passo (pedido criado, agendamento feito, orçamento enviado, link direto de compra de um item específico).
+- Há resolução clara do objetivo do usuário.
+
+FORMATO DE SAÍDA:
+- Responda APENAS com "true" ou "false" em minúsculas, nada mais.
+
+CONVERSA:
+{text}
+"""
     return send_message(prompt)
 
 def lambda_handler(event, context):    
